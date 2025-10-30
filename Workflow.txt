@@ -1,0 +1,9 @@
+29/10/2025: 
+Created the code example_dqn.py
+running conda env : python 3.11 newly created
+install tensorflow 2.14
+converted C++ env codes in to python and generated the simulation env in python
+
+30/10/2025
+works well with python 3.9
+
