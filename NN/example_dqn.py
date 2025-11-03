@@ -13,8 +13,9 @@ import action_mapper
 
 import matplotlib.pyplot as plt_ex
 
+from tensorflow.keras.utils import plot_model
 
-EPISODES = 750
+EPISODES = 500
 
 class DQNAgent:
 
@@ -33,6 +34,8 @@ class DQNAgent:
 
         self.model = self._build_model()
 
+    
+
     def _build_model(self):
 
         # Neural Net for Deep-Q learning Model
@@ -41,8 +44,12 @@ class DQNAgent:
         model.add(Dense(512, activation='relu'))
         model.add(Dense(256, activation='relu'))
         model.add(Dense(self.action_size, activation='linear'))
-        model.compile(loss='mse',
-                      optimizer=Adam(lr=self.learning_rate))
+        # model.compile(loss='mse',
+        #               optimizer=Adam(lr=self.learning_rate))
+        model.compile(loss='mse', optimizer=Adam(learning_rate=self.learning_rate))
+
+
+        
         return model
 
     def remember(self, state, action, reward, next_state, done):
@@ -60,7 +67,7 @@ class DQNAgent:
             target = reward
             if not done:
                 target = (reward + self.gamma *
-                          np.amax(self.model.predict(next_state)[0]))
+                        np.amax(self.model.predict(next_state)[0]))
             target_f = self.model.predict(state)
             target_f[0][action] = target
             self.model.fit(state, target_f, epochs=1, verbose=0)
@@ -85,11 +92,23 @@ if __name__ == "__main__":
     action_size = action_mapper.ACTION_SIZE
     agent = DQNAgent(state_size, action_size)
     # agent.load("./save/cartpole-dqn.h5")
+
+    plot_model(
+        agent.model,
+        to_file="figs/dqn_model.png",
+        show_shapes=True,         # show tensor shapes
+        show_layer_names=True,    # show layer names
+        expand_nested=False,
+        dpi=200,
+        rankdir="LR"              # "TB" top->bottom, or "LR" left->right
+    )
+
+
     done = False
     batch_size = 48
     env.activate_visuals(True)
 
-    agent_epsilons = []
+    agent_scores = []
     print("START DQN")
 
 
@@ -105,6 +124,7 @@ if __name__ == "__main__":
         state, _, _, _ = env.reset()
 
         state = np.reshape(state, [1, state_size])
+        print("initial statr: ", state)
 
         for iteration in range(100):
             action = agent.act(state)
@@ -126,45 +146,41 @@ if __name__ == "__main__":
                 
 
             if done:
-                agent_epsilons.append(float(agent.epsilon))
+                agent_scores.append(float(reward_sum))
                 print("episode: {}/{}, score: {}, e: {:.2} iteration:{}"
-                      .format(e, EPISODES, reward_sum, agent.epsilon, iteration))
+                    .format(e, EPISODES, reward_sum, agent.epsilon, iteration))
                 break
         if len(agent.memory) > batch_size:
             agent.replay(batch_size)
-        if e % 100 == 0:
+        if e % 50 == 0:
             # agent.save("./save/dqn" + str(e) + ".h5")
-            plt_ex.plot(np.array(agent_epsilons))
+            plt_ex.plot(np.array(agent_scores))
 
-            # Add labels and title for clarity (optional)
             plt_ex.xlabel("X-axis Label")
             plt_ex.ylabel("Agents Epsilons")
             plt_ex.title("Agent's Epsilons")
 
-            # Display the plot
             plt_ex.savefig("figs/After {} episodes.png".format(e))
-            agent.save("weights2/500_runs_weight_after{}_episodes.h5".format(e))
+            agent.save("weights/{}_runs_weight_after{}_episodes.h5".format(EPISODES,e))
             # agent.save("weights/500_runs_model_after{}_episodes.keras".format(e))
 
 
     print("DQN Done")
     print("episode: {}/{}, score: {}, e: {:.2} iteration:{}"
-                      .format(e, EPISODES, reward_sum, agent.epsilon, iteration))
-    
-    print(agent_epsilons)
-    
-    
-    
-    plt_ex.plot(np.array(agent_epsilons))
+                    .format(e, EPISODES, reward_sum, agent.epsilon, iteration))
 
-    # Add labels and title for clarity (optional)
+    print(agent_scores)
+
+
+
+    plt_ex.plot(np.array(agent_scores))
+
+
     plt_ex.xlabel("X-axis Label")
     plt_ex.ylabel("Agents Epsilons")
     plt_ex.title("Agent's Epsilons")
 
-    # Display the plot
     plt_ex.savefig("figs/final.png")
-    agent.save("weights2/500_runs_weight.h5")
-    agent.save("weights2/500_runs_model.keras")
-    
-    
+    agent.save("weights/{}_runs_weight.h5".format(EPISODES))
+            
+            

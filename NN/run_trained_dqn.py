@@ -10,7 +10,7 @@ from environment.environment import Environment
 from environment.environment_node_data import Mode
 import action_mapper
 
-EPISODES = 10  # how many evaluation episodes you want
+EPISODES = 5 
 
 class DQNAgent:
     def __init__(self, state_size, action_size):
@@ -40,7 +40,7 @@ class DQNAgent:
         return int(np.argmax(act_values[0]))
 
 if __name__ == "__main__":
-    # ---- Environment must match the training setup ----
+    
     env = Environment("../Simulation2d/world/test")
     # env.set_mode(Mode.PAIR_ALL, terminate_at_end=True)
     # env.set_mode(Mode.ALL_RANDOM, terminate_at_end=False)
@@ -51,8 +51,8 @@ if __name__ == "__main__":
     action_size = action_mapper.ACTION_SIZE
 
     agent = DQNAgent(state_size, action_size)
-    agent.load("weights/500_runs_weight.h5")
-    agent.epsilon = 0.0  # ensure no random picks
+    agent.load("weights_done/500_runs_weight.h5")
+    agent.epsilon = 0.0  
 
     env.activate_visuals(True)
 
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     scores = []
 
     for e in range(EPISODES):
-        # some envs return just state; others return (state, info...) — handle both
+        
         reset_out = env.reset()
         state = reset_out[0] if isinstance(reset_out, (list, tuple)) else reset_out
         state = np.reshape(state, (1, state_size))
@@ -68,10 +68,11 @@ if __name__ == "__main__":
         reward_sum = 0.0
         done = False
 
-        # visualize every episode or every N episodes if you prefer
-        visualize = True  # or: (e % 5 == 0)
+        
+        visualize = True  #  (e % 5 == 0)
 
-        for iteration in range(100):  # or your eval horizon
+        for iteration in range(150):  
+        # while True:
             action = agent.act(state)
             linear, angular = action_mapper.map_action(action)
 
@@ -80,7 +81,7 @@ if __name__ == "__main__":
             if isinstance(step_out, (list, tuple)) and len(step_out) >= 4:
                 next_state, reward, done, _ = step_out[:4]
             else:
-                next_state, reward, done = step_out  # if env returns 3
+                next_state, reward, done = step_out  
 
             next_state = np.reshape(next_state, (1, state_size))
             reward_sum += float(reward)

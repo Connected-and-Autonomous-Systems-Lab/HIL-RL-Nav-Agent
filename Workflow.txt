@@ -6,4 +6,5 @@ converted C++ env codes in to python and generated the simulation env in python
 
 30/10/2025
 works well with python 3.9
+trained for 500  episodes and agent was able to navigate upto the last circle in the 
 

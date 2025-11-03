@@ -9,6 +9,7 @@ __pycache__/
 # Weights and Figures
 NN/weights/
 NN/weights2/
+NN/weights_done/
 NN/figs/
 
 # Distribution / packaging
