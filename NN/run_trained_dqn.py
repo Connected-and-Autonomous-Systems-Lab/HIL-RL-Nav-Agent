@@ -41,7 +41,7 @@ class DQNAgent:
 
 if __name__ == "__main__":
     
-    env = Environment("../Simulation2d/world/test")
+    env = Environment("../Simulation2d/world/pathASM")
     # env.set_mode(Mode.PAIR_ALL, terminate_at_end=True)
     # env.set_mode(Mode.ALL_RANDOM, terminate_at_end=False)
     env.use_observation_rotation_size(True)
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     action_size = action_mapper.ACTION_SIZE
 
     agent = DQNAgent(state_size, action_size)
-    agent.load("weights_done/500_runs_weight.h5")
+    agent.load("weights/best_upto_now.h5")
     agent.epsilon = 0.0  
 
     env.activate_visuals(True)

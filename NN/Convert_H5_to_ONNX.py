@@ -21,7 +21,7 @@ def _build_model(state_size, action_size):
 
 # 1. Create a model instance and load your weights
 agent_model = _build_model(STATE_SIZE, ACTION_SIZE)
-agent_model.load_weights("weights/weight_after_500_episodes.h5")
+agent_model.load_weights("weights/500_runs_weight.h5")
 print("Model weights loaded.")
 
 # 2. Define the input signature

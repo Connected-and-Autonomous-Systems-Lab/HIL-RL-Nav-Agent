@@ -15,7 +15,34 @@ import matplotlib.pyplot as plt_ex
 
 from tensorflow.keras.utils import plot_model
 
-EPISODES = 500
+import csv, os
+from pathlib import Path
+from datetime import datetime
+
+
+# Prevent Windows from sleeping while this script runs
+# import ctypes, atexit
+
+# ES_CONTINUOUS        = 0x80000000
+# ES_SYSTEM_REQUIRED   = 0x00000001
+# ES_DISPLAY_REQUIRED  = 0x00000002
+# ES_AWAYMODE_REQUIRED = 0x00000040  # useful on AC power
+
+# def _stay_awake():
+#     ctypes.windll.kernel32.SetThreadExecutionState(
+#         ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED | ES_AWAYMODE_REQUIRED
+#     )
+
+# def _allow_sleep():
+#     ctypes.windll.kernel32.SetThreadExecutionState(ES_CONTINUOUS)
+
+# _stay_awake()
+# atexit.register(_allow_sleep)
+
+
+
+
+EPISODES = 650
 
 class DQNAgent:
 
@@ -80,6 +107,17 @@ class DQNAgent:
     def save(self, name):
         self.model.save_weights(name)
 
+
+def append_reward(csv_path: Path, episode: int, reward_sum: float, epsilon: float) -> None:
+    csv_path.parent.mkdir(parents=True, exist_ok=True)
+    write_header = not csv_path.exists()
+    with open(csv_path, "a", newline="") as f:
+        w = csv.writer(f)
+        if write_header:
+            w.writerow(["episode", "reward_sum", "epsilon", "timestamp"])
+        w.writerow([episode, float(reward_sum), float(epsilon), datetime.now().isoformat()])
+
+
 if __name__ == "__main__":
     env = Environment("../Simulation2d/world/test")
     #env.set_mode(Mode.PAIR_ALL, terminate_at_end=True)
@@ -92,6 +130,8 @@ if __name__ == "__main__":
     action_size = action_mapper.ACTION_SIZE
     agent = DQNAgent(state_size, action_size)
     # agent.load("./save/cartpole-dqn.h5")
+
+    rewards_csv = Path("logs/rewards.csv")
 
     plot_model(
         agent.model,
@@ -117,7 +157,7 @@ if __name__ == "__main__":
 
         
 
-        visualize = (e % 50 == 0)
+        visualize = (e % 1000 == 0 and e != 0)
 
         reward_sum = 0
 
@@ -149,10 +189,12 @@ if __name__ == "__main__":
                 agent_scores.append(float(reward_sum))
                 print("episode: {}/{}, score: {}, e: {:.2} iteration:{}"
                     .format(e, EPISODES, reward_sum, agent.epsilon, iteration))
+            
+                append_reward(rewards_csv, e, reward_sum, agent.epsilon)
                 break
         if len(agent.memory) > batch_size:
             agent.replay(batch_size)
-        if e % 50 == 0:
+        if e % 100 == 0 and e != 0:
             # agent.save("./save/dqn" + str(e) + ".h5")
             plt_ex.plot(np.array(agent_scores))
 
@@ -181,6 +223,6 @@ if __name__ == "__main__":
     plt_ex.title("Agent's Epsilons")
 
     plt_ex.savefig("figs/final.png")
-    agent.save("weights/{}_runs_weight.h5".format(EPISODES))
+    agent.save("weights/{}_runs_weight_final_epsilon_{}.h5".format(EPISODES, agent.epsilon))
             
             
