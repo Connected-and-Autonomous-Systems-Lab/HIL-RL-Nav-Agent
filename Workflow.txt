@@ -8,3 +8,23 @@ converted C++ env codes in to python and generated the simulation env in python
 works well with python 3.9
 trained for 500  episodes and agent was able to navigate upto the last circle in the 
 
+03/11/2025
+converted the weights to onnx and run inside unity for testing
+Unity model only too straight paths and didn't navigate properly
+
+training e = o.37
+episode: 499/500, score: 132.89201325101777, e: 0.37 iteration:99 
+
+training agent with the same reward function for 1000 episodes
+
+training with 1000 episodes failed, then trained for 650 episodes. 
+time waste penalty = -0.001
+distance reward weight = 0.03
+model after 500 episodes was good, but the final 650 episodes model is not working properly
+
+04/11/2025
+Added the csv saving feature to save the total reward value in each episode(example_dqn.py)
+Added a new training and testing environment(pathASM)
+
+05/11/2025
+changed the maxlen of self.memory of DQN agent to 10000 from 50000
