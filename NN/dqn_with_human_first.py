@@ -195,7 +195,7 @@ if __name__ == "__main__":
 
         for iteration in range(100):
 
-            if e < 5:
+            if e < 5 or e%10==0:
                 # --------- MANUAL MODE ----------
                 linear, angular, manual_done = manual_control()
                 if manual_done:
@@ -206,7 +206,7 @@ if __name__ == "__main__":
                     append_reward(rewards_csv, e, reward_sum, agent.epsilon)
                     break
 
-                # if you need an action index for replay, try to reverse-map; fallback to 0
+            
                 if hasattr(action_mapper, "reverse_map"):
                     action = action_mapper.reverse_map(linear, angular)
                 else:
