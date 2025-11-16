@@ -7,10 +7,10 @@
 #SBATCH --account=kj373                 #  PI's UCID
 #SBATCH --mail-user asm277@njit.edu
 #SBATCH --mail-type=ALL
-#SBATCH --nodes=5
-#SBATCH --ntasks=512
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=8
 #SBATCH --time=72:00:00                 # max for standard/low QoS is 72h
-#SBATCH --mem=16G                       # adjust to your needs
+#SBATCH --mem-per-cpu=8000M                       
 
 # ---- Environment setup ----
 # Example: if you use modules + conda/venv, adapt to your setup
@@ -18,7 +18,7 @@
 module load bright python39  # or whichever python module HPC recommends
 
 # Activate venv:
-source python39/bin/activate
+source ../python39/bin/activate
 
 # ---- Go to your project dir ----
 cd /NN
