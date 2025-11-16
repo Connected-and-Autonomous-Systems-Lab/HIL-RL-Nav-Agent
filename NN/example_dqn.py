@@ -40,7 +40,7 @@ from datetime import datetime
 
 
 
-EPISODES = 10
+EPISODES = 1000
 STARTING_TIME = datetime.now().strftime("%Y%m%d-%H%M%S")
 LOG_FILE = Path("logs/{}_rewards.csv".format(STARTING_TIME))
 
