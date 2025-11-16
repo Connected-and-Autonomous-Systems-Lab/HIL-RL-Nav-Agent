@@ -18,10 +18,10 @@
 module load bright python39  # or whichever python module HPC recommends
 
 # Activate venv:
-source ../python39/bin/activate
+source /mmfs1/scratch/kj373/asm277/HIL-RL/python39/bin/activate
 
 # ---- Go to your project dir ----
-cd /NN
+cd /mmfs1/scratch/kj373/asm277/HIL-RL/HIL-RL-Nav-Agent/NN
 
 # ---- Run your RL training ----
 python example_dqn.py
