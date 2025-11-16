@@ -41,13 +41,15 @@ from datetime import datetime
 
 
 EPISODES = 10
+STARTING_TIME = datetime.now().strftime("%Y%m%d-%H%M%S")
+LOG_FILE = "logs/{}_rewards.csv".format(STARTING_TIME)
 
 class DQNAgent:
 
     def __init__(self, state_size, action_size):
         self.state_size = state_size
         self.action_size = action_size
-        self.memory = deque(maxlen=50000)
+        self.memory = deque(maxlen=10000)
         self.gamma = 0.95    # discount rate
         self.epsilon = 1.0  # exploration rate
         # self.epsilon_min = 0.01
@@ -129,7 +131,6 @@ if __name__ == "__main__":
     agent = DQNAgent(state_size, action_size)
     # agent.load("./save/cartpole-dqn.h5")
 
-    rewards_csv = Path("logs/rewards.csv")
 
 
 
@@ -137,16 +138,12 @@ if __name__ == "__main__":
     batch_size = 48
     env.activate_visuals(True)
 
-    agent_scores = []
     print("START DQN")
 
 
 
     for e in range(EPISODES):
 
-        
-
-        visualize = (e % 1000 == 0 and e != 0)
 
         reward_sum = 0
 
@@ -168,24 +165,19 @@ if __name__ == "__main__":
 
             agent.remember(state, action, reward_sum, next_state, done)
             state = next_state
-
-            if visualize:
-                env.visualize()
-                #time.sleep(1.0)
                 
 
             if done:
-                agent_scores.append(float(reward_sum))
                 print("episode: {}/{}, score: {}, e: {:.2} iteration:{}"
                     .format(e, EPISODES, reward_sum, agent.epsilon, iteration))
             
-                append_reward(rewards_csv, e, reward_sum, agent.epsilon)
+                append_reward(LOG_FILE, e, reward_sum, agent.epsilon)
                 break
         if len(agent.memory) > batch_size:
             agent.replay(batch_size)
         if e % 100 == 0 and e != 0:
             # agent.save("./save/dqn" + str(e) + ".h5")
-            agent.save("weights/{}_runs_weight_after{}_episodes.h5".format(EPISODES,e))
+            agent.save("weights/{}_{}_runs_weight_after{}_episodes.h5".format(STARTING_TIME, EPISODES,e))
             # agent.save("weights/500_runs_model_after{}_episodes.keras".format(e))
 
 
@@ -193,8 +185,8 @@ if __name__ == "__main__":
     print("episode: {}/{}, score: {}, e: {:.2} iteration:{}"
                     .format(e, EPISODES, reward_sum, agent.epsilon, iteration))
 
-    print(agent_scores)
 
-    agent.save("weights/{}_runs_weight_final_epsilon_{}.h5".format(EPISODES, agent.epsilon))
+
+    agent.save("weights/{}_final_weights.h5".format(STARTING_TIME))
             
             
