@@ -11,8 +11,6 @@ from environment.environment import Environment
 from environment.environment_node_data import Mode
 import action_mapper 
 
-import matplotlib.pyplot as plt_ex
-
 from tensorflow.keras.utils import plot_model
 
 import csv, os
@@ -42,7 +40,7 @@ from datetime import datetime
 
 
 
-EPISODES = 650
+EPISODES = 10
 
 class DQNAgent:
 
@@ -133,15 +131,6 @@ if __name__ == "__main__":
 
     rewards_csv = Path("logs/rewards.csv")
 
-    plot_model(
-        agent.model,
-        to_file="figs/dqn_model.png",
-        show_shapes=True,         # show tensor shapes
-        show_layer_names=True,    # show layer names
-        expand_nested=False,
-        dpi=200,
-        rankdir="LR"              # "TB" top->bottom, or "LR" left->right
-    )
 
 
     done = False
@@ -196,13 +185,6 @@ if __name__ == "__main__":
             agent.replay(batch_size)
         if e % 100 == 0 and e != 0:
             # agent.save("./save/dqn" + str(e) + ".h5")
-            plt_ex.plot(np.array(agent_scores))
-
-            plt_ex.xlabel("X-axis Label")
-            plt_ex.ylabel("Agents Epsilons")
-            plt_ex.title("Agent's Epsilons")
-
-            plt_ex.savefig("figs/After {} episodes.png".format(e))
             agent.save("weights/{}_runs_weight_after{}_episodes.h5".format(EPISODES,e))
             # agent.save("weights/500_runs_model_after{}_episodes.keras".format(e))
 
@@ -213,16 +195,6 @@ if __name__ == "__main__":
 
     print(agent_scores)
 
-
-
-    plt_ex.plot(np.array(agent_scores))
-
-
-    plt_ex.xlabel("X-axis Label")
-    plt_ex.ylabel("Agents Epsilons")
-    plt_ex.title("Agent's Epsilons")
-
-    plt_ex.savefig("figs/final.png")
     agent.save("weights/{}_runs_weight_final_epsilon_{}.h5".format(EPISODES, agent.epsilon))
             
             
