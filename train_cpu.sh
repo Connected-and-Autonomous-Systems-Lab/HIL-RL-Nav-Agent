@@ -1,12 +1,14 @@
 #!/bin/bash -l
 #SBATCH --job-name=rl_train_asm
-#SBATCH --output=rl_train.%j.out        # stdout goes here
+#SBATCH --output=rl_train_asm.%j.out        # stdout goes here
 #SBATCH --error=rl_train.%j.err         # stderr goes here
 #SBATCH --partition=general             # CPU partition
 #SBATCH --qos=low                       # lowest priority
-#SBATCH --account=YOUR_PI_UCID          # replace with your PI's UCID
+#SBATCH --account=kj373                 #  PI's UCID
+#SBATCH --mail-user asm277@njit.edu
+#SBATCH --mail-type=ALL
 #SBATCH --nodes=1
-#SBATCH --ntasks=1
+#SBATCH --ntasks=512
 #SBATCH --cpus-per-task=4               # adjust if you need fewer/more cores
 #SBATCH --time=72:00:00                 # max for standard/low QoS is 72h
 #SBATCH --mem=16G                       # adjust to your needs
