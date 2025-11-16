@@ -1,7 +1,7 @@
 #!/bin/bash -l
 #SBATCH --job-name=rl_train_asm
-#SBATCH --output=rl_train_asm.%j.out        # stdout goes here
-#SBATCH --error=rl_train.%j.err         # stderr goes here
+#SBATCH --output=./hpc_logs/rl_train_asm.%j.out        # stdout goes here
+#SBATCH --error=rl_train_asm.%j.err         # stderr goes here
 #SBATCH --partition=general             # CPU partition
 #SBATCH --qos=standard                       # lowest priority
 #SBATCH --account=kj373                 #  PI's UCID
