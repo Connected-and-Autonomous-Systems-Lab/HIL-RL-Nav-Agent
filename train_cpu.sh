@@ -3,7 +3,7 @@
 #SBATCH --output=rl_train_asm.%j.out        # stdout goes here
 #SBATCH --error=rl_train.%j.err         # stderr goes here
 #SBATCH --partition=general             # CPU partition
-#SBATCH --qos=low                       # lowest priority
+#SBATCH --qos=standard                       # lowest priority
 #SBATCH --account=kj373                 #  PI's UCID
 #SBATCH --mail-user asm277@njit.edu
 #SBATCH --mail-type=ALL
