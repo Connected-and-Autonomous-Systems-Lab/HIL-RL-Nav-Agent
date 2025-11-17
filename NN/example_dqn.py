@@ -166,7 +166,7 @@ if __name__ == "__main__":
     agent = DQNAgent(state_size, action_size)
     # agent.load("./save/cartpole-dqn.h5")
 
-    rewards_csv = Path("logs/rewards_without_revisit_penalty.csv")
+    rewards_csv = Path("logs/rewards_without_huma.csv")
 
     plot_model(
         agent.model,
