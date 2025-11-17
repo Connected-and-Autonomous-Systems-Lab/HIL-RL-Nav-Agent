@@ -205,10 +205,17 @@ class Environment:
         the selected mode.
         :return:
         """
-        self._fitness_data.reset()
+        # environment.py (in Environment.reset)
+        self._fitness_data.reset()          # you already have this
         x, y, orientation = self._fitness_data.get_robot_start()
         self._env.set_robot_pose(x, y, orientation)
+
+        # NEW: initialize visited set and last-pose baseline
+        if hasattr(self._fitness_data, "reset_episode"):
+            self._fitness_data.reset_episode(x, y, orientation)
+
         return self.step(0.0, 0.0)
+
 
     def set_mode(self, mode, terminate_at_end=True):
         """

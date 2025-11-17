@@ -21,28 +21,28 @@ from datetime import datetime
 
 
 # Prevent Windows from sleeping while this script runs
-import ctypes, atexit
+# import ctypes, atexit
 
-ES_CONTINUOUS        = 0x80000000
-ES_SYSTEM_REQUIRED   = 0x00000001
-ES_DISPLAY_REQUIRED  = 0x00000002
-ES_AWAYMODE_REQUIRED = 0x00000040  # useful on AC power
+# ES_CONTINUOUS        = 0x80000000
+# ES_SYSTEM_REQUIRED   = 0x00000001
+# ES_DISPLAY_REQUIRED  = 0x00000002
+# ES_AWAYMODE_REQUIRED = 0x00000040  # useful on AC power
 
-def _stay_awake():
-    ctypes.windll.kernel32.SetThreadExecutionState(
-        ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED | ES_AWAYMODE_REQUIRED
-    )
+# def _stay_awake():
+#     ctypes.windll.kernel32.SetThreadExecutionState(
+#         ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED | ES_AWAYMODE_REQUIRED
+#     )
 
-def _allow_sleep():
-    ctypes.windll.kernel32.SetThreadExecutionState(ES_CONTINUOUS)
+# def _allow_sleep():
+#     ctypes.windll.kernel32.SetThreadExecutionState(ES_CONTINUOUS)
 
-_stay_awake()
-atexit.register(_allow_sleep)
-
-
+# _stay_awake()
+# atexit.register(_allow_sleep)
 
 
-EPISODES = 100
+
+
+EPISODES = 50
 
 class DQNAgent:
 
@@ -107,50 +107,43 @@ class DQNAgent:
     def save(self, name):
         self.model.save_weights(name)
 
-    def evaluate_model(self, batch_size):
-        """
-        Evaluate the model's performance using Mean Squared Error (MSE)
-        over a random minibatch from memory.
 
-        :param batch_size: Number of samples to evaluate.
-        :return: Mean Squared Error (float)
-        """
-        # If not enough samples, return None
-        if len(self.memory) < batch_size:
-            return None
-
-        minibatch = random.sample(self.memory, batch_size)
-        mse_list = []
-
-        for state, action, reward, next_state, done in minibatch:
-            # Compute target value (same logic as in replay)
-            target = reward
-            if not done:
-                target = reward + self.gamma * np.amax(self.model.predict(next_state, verbose=0)[0])
-
-            # Predicted Q-values for current state
-            predicted_q = self.model.predict(state, verbose=0)[0][action]
-
-            # MSE for this sample
-            mse = (target - predicted_q) ** 2
-            mse_list.append(mse)
-
-        # Return mean MSE
-        mean_mse = np.mean(mse_list)
-        print(f"Evaluation MSE: {mean_mse:.6f}")
-        return mean_mse
-
-
-
-
-def append_reward(csv_path: Path, episode: int, reward_sum: float, epsilon: float, mse: float) -> None:
+def append_reward(csv_path: Path, episode: int, reward_sum: float, epsilon: float) -> None:
     csv_path.parent.mkdir(parents=True, exist_ok=True)
     write_header = not csv_path.exists()
     with open(csv_path, "a", newline="") as f:
         w = csv.writer(f)
         if write_header:
-            w.writerow(["episode", "reward_sum", "epsilon", "mse", "timestamp"])
-        w.writerow([episode, float(reward_sum), float(epsilon), float(mse), datetime.now().isoformat()])
+            w.writerow(["episode", "reward_sum", "epsilon", "timestamp"])
+        w.writerow([episode, float(reward_sum), float(epsilon), datetime.now().isoformat()])
+
+def manual_control():
+    """
+    Let the human control the agent manually.
+    Press keys to control linear and angular velocity.
+    """
+    print("\nManual control mode (use W/A/S/D keys, p to pause/quit episode):")
+    print("  W = forward, A = turn left, D = turn right")
+
+    key = input("Enter action (W/A/D/Q/E): ").strip().lower()
+    if key == 'w':
+        linear, angular = 0.6, 0.0
+    elif key == 'a':
+        linear, angular = 0.5, 0.5
+    elif key == 'd':
+        linear, angular = 0.5, -0.5
+    elif key == 'q':
+        linear, angular = 0.3, 1.25
+    elif key == 'e':
+        linear, angular = 0.3, -1.25
+    elif key == 'p':
+        return None, None, True  # end episode manually
+    else:
+        print("Invalid input! Skipping...")
+        linear, angular = 0.0, 0.0
+
+    return linear, angular, False
+
 
 
 if __name__ == "__main__":
@@ -166,7 +159,7 @@ if __name__ == "__main__":
     agent = DQNAgent(state_size, action_size)
     # agent.load("./save/cartpole-dqn.h5")
 
-    rewards_csv = Path("logs/rewards_without_revisit_penalty.csv")
+    rewards_csv = Path("logs/rewards_with_human.csv")
 
     plot_model(
         agent.model,
@@ -184,64 +177,80 @@ if __name__ == "__main__":
     env.activate_visuals(True)
 
     agent_scores = []
-    agent_mses= []
     print("START DQN")
 
 
-
     for e in range(EPISODES):
-
-        
-
-        visualize = (e % 2 == 0 and e != 0)
-
-        reward_sum = 0
+        visualize = (e % 5 == 0 and e != 0)  
+        reward_sum = 0.0
 
         state, _, _, _ = env.reset()
-
         state = np.reshape(state, [1, state_size])
 
+        # --- show the initial frame in manual episodes ---
+        if e < 5:
+            env.visualize()
+
+        print(f"Episode {e} -> {'MANUAL' if e < 5 else 'AUTONOMOUS'}")
+
         for iteration in range(100):
-            action = agent.act(state)
 
-            linear, angular = action_mapper.map_action(action)
+            if e < 5 or e%10==0:
+                # --------- MANUAL MODE ----------
+                linear, angular, manual_done = manual_control()
+                if manual_done:
+                    done = True
+                    # still log & break like a normal done
+                    agent_scores.append(float(reward_sum))
+                    print(f"episode: {e}/{EPISODES}, score: {reward_sum}, e: {agent.epsilon:.2f} iteration:{iteration}")
+                    append_reward(rewards_csv, e, reward_sum, agent.epsilon)
+                    break
 
-            next_state, reward, done, _ = env.step(linear, angular, 20)
+            
+                if hasattr(action_mapper, "reverse_map"):
+                    action = action_mapper.reverse_map(linear, angular)
+                else:
+                    action = 0  # placeholder index if no reverse map exists
+
+                next_state, reward, done, _ = env.step(linear, angular, 20)
+                # ----- visualize EVERY STEP in manual mode -----
+                env.visualize()
+
+            else:
+                # --------- AUTONOMOUS DQN ----------
+                action = agent.act(state)
+                linear, angular = action_mapper.map_action(action)
+                next_state, reward, done, _ = env.step(linear, angular, 20)
+
+                if visualize:
+                    env.visualize()
 
             next_state = np.reshape(next_state, [1, state_size])
+            reward_sum += reward
 
-            reward_sum = reward_sum + reward
+            # IMPORTANT: store the per-step reward (not reward_sum)
+            agent.remember(state, action, reward, next_state, done)
 
-            agent.remember(state, action, reward_sum, next_state, done)
             state = next_state
-
-            if visualize:
-                env.visualize()
-                #time.sleep(1.0)
-                
 
             if done:
                 agent_scores.append(float(reward_sum))
-                print("episode: {}/{}, score: {}, e: {:.2} iteration:{}"
+                print("episode: {}/{}, score: {}, e: {:.2f} iteration:{}"
                     .format(e, EPISODES, reward_sum, agent.epsilon, iteration))
+                append_reward(rewards_csv, e, reward_sum, agent.epsilon)
                 break
-        if len(agent.memory) > batch_size:
-            agent.replay(batch_size)      # Training the model
-            mse = agent.evaluate_model(batch_size)
-            append_reward(rewards_csv, e, reward_sum, agent.epsilon, mse)
 
+        if len(agent.memory) > batch_size:
+            agent.replay(batch_size)
 
         if e % 100 == 0 and e != 0:
-            # agent.save("./save/dqn" + str(e) + ".h5")
             plt_ex.plot(np.array(agent_scores))
-
             plt_ex.xlabel("X-axis Label")
             plt_ex.ylabel("Agents Epsilons")
             plt_ex.title("Agent's Epsilons")
-
             plt_ex.savefig("figs/After {} episodes.png".format(e))
-            mse = agent.evaluate_model(batch_size)
-            agent.save("weights/{}_runs_weight_after{}_episodes_with_revisit_penalty_mse_{}.h5".format(EPISODES,e, mse))
+            agent.save("weights/{}_runs_weight_after{}_episodes.h5".format(EPISODES, e))
+
 
 
     print("DQN Done")
@@ -260,6 +269,6 @@ if __name__ == "__main__":
     plt_ex.title("Agent's Epsilons")
 
     plt_ex.savefig("figs/final.png")
-    agent.save("weights/{}_runs_weight_final_epsilon_{}_with_revisit_penalty.h5".format(EPISODES, agent.epsilon))
+    agent.save("weights/{}_runs_weight_final_epsilon_{}.h5".format(EPISODES, agent.epsilon))
             
             

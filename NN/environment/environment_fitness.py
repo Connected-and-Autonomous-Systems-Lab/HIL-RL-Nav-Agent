@@ -20,6 +20,26 @@ class FitnessData:
         self._robot_x_last = 0.0
         self._robot_y_last = 0.0
         self._robot_orientation_last = 0.0
+        # environment_fitness.py  (inside class FitnessData.__init__)
+        self._visited = set()           # set of grid cells visited this episode
+        self._cell_size = 0.5           # meters per grid cell (tune!)
+        self._revisit_penalty = -0.05    # penalty for revisiting a cell (tune!)
+
+    # environment_fitness.py  (inside class FitnessData)
+    def _cell_for(self, x: float, y: float):
+        """Map continuous (x,y) to a grid cell key."""
+        return (round(x / self._cell_size), round(y / self._cell_size))
+
+    def reset_episode(self, robot_x: float, robot_y: float, robot_orientation: float):
+        """Clear per-episode state and set last pose."""
+        self._visited.clear()
+        self._robot_x_last = robot_x
+        self._robot_y_last = robot_y
+        self._robot_orientation_last = robot_orientation
+        # mark the starting cell as visited
+        self._visited.add(self._cell_for(robot_x, robot_y))
+
+
 
     def get_end_node(self):
         """
@@ -185,6 +205,15 @@ class FitnessData:
         reward += (3*rotations_cos_sum) #[-3 , 3 ]
         reward += diff_rotations # [ -3xpi , pi]
 
+        # Determine current cell and apply revisit penalty if needed
+        # cell = self._cell_for(robot_x, robot_y)
+        # if cell in self._visited:
+        #     print("!!!! already visited cell !!!!")
+        #     reward += self._revisit_penalty
+        # else:
+        #     self._visited.add(cell)
+
+
 
         #reward ~ [-18, 12 ]
         if env_done:
@@ -200,6 +229,14 @@ class FitnessData:
         self._robot_orientation_last = robot_orientation
 
         return reward, done
+    
+
+    def set_exploration_grid(self, cell_size: float = None, revisit_penalty: float = None):
+        if cell_size is not None and cell_size > 0:
+            self._cell_size = cell_size
+        if revisit_penalty is not None:
+            self._revisit_penalty = revisit_penalty
+
 
     def _distance_robot_to_start(self, robot_x: float, robot_y: float) -> float:
         """
