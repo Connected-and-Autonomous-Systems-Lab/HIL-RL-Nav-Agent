@@ -21,7 +21,7 @@ def _build_model(state_size, action_size):
 
 # 1. Create a model instance and load your weights
 agent_model = _build_model(STATE_SIZE, ACTION_SIZE)
-agent_model.load_weights("weights/500_runs_weight.h5")
+agent_model.load_weights("weights_done/Best_Upto_now.h5")
 print("Model weights loaded.")
 
 # 2. Define the input signature
@@ -39,7 +39,7 @@ onnx_model, _ = tf2onnx.convert.from_keras(agent_model,
 print("Model converted to ONNX.")
 
 # 4. Save the .onnx file
-with open("weights/robot_agent.onnx", "wb") as f:
+with open("weights_done/best_upto_now.onnx", "wb") as f:
     f.write(onnx_model.SerializeToString())
 
 print("Successfully saved robot_agent.onnx")

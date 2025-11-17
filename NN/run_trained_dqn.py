@@ -51,7 +51,7 @@ if __name__ == "__main__":
     action_size = action_mapper.ACTION_SIZE
 
     agent = DQNAgent(state_size, action_size)
-    agent.load("weights/50_runs_weight_final_epsilon_0.9047468180040359.h5")
+    agent.load("weights/650_runs_weight_after400_episodes_with_revisit_penalty.h5")
     agent.epsilon = 0.0  
 
     env.activate_visuals(True)

@@ -1,0 +1,77 @@
+# ==== BORDER LINES (12 x 12 bounding box) -> x1 y1 x2 y2
+0.0 0.0 12.0 0.0
+0.0 0.0 0.0 12.0
+12.0 0.0 12.0 12.0
+0.0 12.0 12.0 12.0
+
+# ==== PATH LINES (axis-aligned corridor; all 90° corners)
+# Corridor width ~ 1.0. Two polylines define the left/right (or lower/upper) bounds.
+
+# --- Segment A: move right near the bottom-left
+# lower bound
+0.0 0.0 12.0 0.0
+# upper bound
+0.0 3.0 9.0 3.0
+
+# --- Segment B: turn up on the right side
+# left bound
+9.0 3.0 9.0 6.0
+# right bound
+12.0 0.0 12.0 9.0
+
+# --- Segment C: turn left across the middle
+# lower bound
+6.0 6.0 9.0 6.0
+# upper bound
+3.0 9.0 12.0 9.0
+
+# -----Turn Down
+# left bound
+3.0 4.5 3.0 9.0
+# right bound
+6.0 3.0 6.0 6.0
+
+0.0 10.5 7.5 10.5
+
+10.0 9.0 10.0 12.0
+
+
+# --- Segment D: turn up toward the top-left
+# left bound
+#1.5 7.0 1.5 11.0
+# right bound
+#2.5 7.0 2.5 11.0
+
+# --- Optional short finish pad near the top-left (still inside box)
+# lower bound
+#1.0 11.0 2.0 11.0
+# upper bound
+#1.0 12.0 2.0 12.0
+
+# ==== RECTANGLE LINES (axis-aligned obstacles inside the corridor; each as 4 lines)
+
+# Obstacle 1 (in Segment A corridor)
+4.4 1.2 6.0 1.2
+6.0 1.2 6.0 1.6
+6.0 1.6 4.4 1.6
+4.4 1.6 4.4 1.2
+
+# Obstacle 2 (in Segment B corridor)
+10.0 3.2 11.0 3.2
+11.0 3.2 11.0 3.7
+11.0 3.7 10.0 3.7
+10.0 3.7 10.0 3.2
+
+# Obstacle 3 (in Segment C corridor)
+4.0 7.0 5.5 7.0
+5.5 7.0 5.5 6.6
+5.5 6.6 4.0 6.6
+4.0 6.6 4.0 7.0
+
+# Obstacle 4 (in Segment D corridor)
+2.0 8.0 1.0 8.0
+1.0 8.0 1.0 9.5
+1.0 9.5 2.0 9.5
+2.0 9.5 2.0 8.0
+
+# ==== CIRCLES (none; using only rectangles to guarantee 90° features)
