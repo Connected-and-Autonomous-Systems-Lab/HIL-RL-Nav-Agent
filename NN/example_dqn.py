@@ -42,7 +42,7 @@ atexit.register(_allow_sleep)
 
 
 
-EPISODES = 50
+EPISODES = 100
 
 class DQNAgent:
 
