@@ -124,6 +124,16 @@ def manual_control():
     return linear, angular, False
 
 
+def is_mixed_mode_episode(e: int) -> bool:
+    """
+    Use MANUAL/AUTO chunks for:
+      - First MANUAL_EPISODES (1..MANUAL_EPISODES in human counting)
+      - Every 10th episode (10, 20, 30, ...) in human counting
+    """
+    human_episode = e + 1
+    return (human_episode <= MANUAL_EPISODES) or (human_episode % 10 == 0)
+
+
 if __name__ == "__main__":
     env = Environment("../Simulation2d/world/test")
     # env.set_mode(Mode.PAIR_ALL, terminate_at_end=True)
@@ -156,7 +166,6 @@ if __name__ == "__main__":
     print("START DQN")
 
     for e in range(EPISODES):
-        # keep your visualize flag for autonomous episodes
         visualize = (e % 5 == 0 and e != 0)
         reward_sum = 0.0
         done = False
@@ -164,14 +173,17 @@ if __name__ == "__main__":
         state, _, _, _ = env.reset()
         state = np.reshape(state, [1, state_size])
 
-        # show initial frame for manual episodes
-        if e < MANUAL_EPISODES:
+        # Decide if this episode uses manual/auto chunks
+        mixed_mode = is_mixed_mode_episode(e)
+
+        # show initial frame for mixed episodes
+        if mixed_mode:
             env.visualize()
 
-        print(f"Episode {e} -> {'MANUAL-CHUNKS' if e < MANUAL_EPISODES else 'AUTONOMOUS'}")
+        print(f"Episode {e} -> {'MANUAL/AUTO CHUNKS' if mixed_mode else 'AUTONOMOUS'}")
 
         # mode & chunk setup
-        mode = 'manual' if e < MANUAL_EPISODES else 'auto'
+        mode = 'manual' if mixed_mode else 'auto'
         steps_in_chunk = 0
 
         for iteration in range(MAX_STEPS_PER_EP):
@@ -200,8 +212,8 @@ if __name__ == "__main__":
                 linear, angular = action_mapper.map_action(action)
                 next_state, reward, done, _ = env.step(linear, angular, 20)
 
-                # visualize during manual episodes or according to your old flag
-                if e < MANUAL_EPISODES:
+                # visualize during mixed episodes or according to your old flag
+                if mixed_mode:
                     env.visualize()
                 else:
                     if visualize:
@@ -222,9 +234,9 @@ if __name__ == "__main__":
                 append_reward(rewards_csv, e, reward_sum, agent.epsilon)
                 break
 
-            # --- Chunk switching logic (only for manual episodes) ---
-            steps_in_chunk += 1
-            if e < MANUAL_EPISODES:
+            # --- Chunk switching logic (only for mixed episodes) ---
+            if mixed_mode:
+                steps_in_chunk += 1
                 if mode == 'manual' and steps_in_chunk >= MANUAL_CHUNK:
                     mode = 'auto'
                     steps_in_chunk = 0

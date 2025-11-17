@@ -42,7 +42,7 @@ from datetime import datetime
 
 
 
-EPISODES = 650
+EPISODES = 100
 
 class DQNAgent:
 
