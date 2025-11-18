@@ -133,7 +133,7 @@ class Environment:
         :param linear_velocity: Linear veloctiy of the robot.
         :param angular_velocity: Angular velocity of the robot.
         :param skip_number: Number of laserscan to skip until return.
-        :return: observation, reward, done, message
+        :return: observation, reward, done, info
         """
         self._env.step(linear_velocity, angular_velocity, skip_number)
 
@@ -147,18 +147,22 @@ class Environment:
                                                            env_robot_orientation,
                                                            env_done)
 
+        # -------- base LiDAR observation (without rotation vector) --------
         if self._cluster_size < 2:
-            observation = self._get_observation()
+            lidar_observation = self._get_observation()
         else:
-            observation = self._get_observation_min_clustered()
+            lidar_observation = self._get_observation_min_clustered()
 
-        # observation = self._classify(observation)  # Franzi quatsch
-        # reward += 5 * observation[int(len(observation) / 2)]  # mehr Franzi quatsch
+        # Copy for full observation (we may append rotation info)
+        observation = list(lidar_observation)
 
+        # -------- optional rotation "compass" vector --------
         if self._observation_rotation_use:
             not_set = True
 
-            angle_target = self._fitness_data.angle_difference_from_robot_to_end(env_robot_x, env_robot_y, env_robot_orientation)
+            angle_target = self._fitness_data.angle_difference_from_robot_to_end(
+                env_robot_x, env_robot_y, env_robot_orientation
+            )
             angle_step_size = 2 * math.pi / self._observation_rotation_size
             angle_sum = - math.pi + angle_step_size
 
@@ -171,7 +175,31 @@ class Environment:
 
                 angle_sum += angle_step_size
 
-        return observation, reward, done, ""
+        # -------- LiDAR angle model (simple assumption: 360° around robot) --------
+        num_beams = len(lidar_observation)
+        if num_beams > 0:
+            angle_min = -math.pi
+            angle_increment = 2.0 * math.pi / float(num_beams)
+        else:
+            angle_min = 0.0
+            angle_increment = 0.0
+
+        # A reasonable default; adjust if your sim uses another range
+        max_range = 10.0
+
+        info = {
+            "robot_x": env_robot_x,
+            "robot_y": env_robot_y,
+            "robot_orientation": env_robot_orientation,
+            "lidar_ranges": lidar_observation,
+            "lidar_angle_min": angle_min,
+            "lidar_angle_increment": angle_increment,
+            "lidar_max_range": max_range,
+            "env_done": env_done,
+        }
+
+        return observation, reward, done, info
+
 
     def _classify(self, observation):
         for i in range(len(observation)):

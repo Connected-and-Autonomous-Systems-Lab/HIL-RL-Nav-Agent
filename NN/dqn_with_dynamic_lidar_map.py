@@ -19,6 +19,8 @@ import csv, os
 from pathlib import Path
 from datetime import datetime
 
+from environment.dynamic_lidar_map import DynamicLidarMap
+
 
 # # Prevent Windows from sleeping while this script runs
 # import ctypes, atexit
@@ -145,14 +147,14 @@ class DQNAgent:
 
 
 
-def append_reward(csv_path: Path, episode: int, reward_sum: float, epsilon: float, mse: float) -> None:
+def append_reward(csv_path: Path, episode: int, reward_sum: float, epsilon: float) -> None:
     csv_path.parent.mkdir(parents=True, exist_ok=True)
     write_header = not csv_path.exists()
     with open(csv_path, "a", newline="") as f:
         w = csv.writer(f)
         if write_header:
-            w.writerow(["episode", "reward_sum", "epsilon", "mse", "timestamp"])
-        w.writerow([episode, float(reward_sum), float(epsilon), float(mse), datetime.now().isoformat()])
+            w.writerow(["episode", "reward_sum", "epsilon",  "timestamp"])
+        w.writerow([episode, float(reward_sum), float(epsilon), datetime.now().isoformat()])
 
 
 if __name__ == "__main__":
@@ -167,6 +169,24 @@ if __name__ == "__main__":
     action_size = action_mapper.ACTION_SIZE
     agent = DQNAgent(state_size, action_size)
     # agent.load("./save/cartpole-dqn.h5")
+
+    # ---- Dynamic LiDAR map (global, human-limited knowledge) ----
+    dynamic_map = DynamicLidarMap(width_m=20.0, height_m=20.0, resolution=0.1)
+    dynamic_map.clear_global_map()  # start with completely unknown map
+
+
+    # ---- Live visualization for dynamic map ----
+    plt_ex.ion()  # turn on interactive mode
+
+    fig_map, ax_map = plt_ex.subplots()
+    im_map = ax_map.imshow(dynamic_map.grid,
+                           origin="lower",
+                           vmin=-1, vmax=1)
+    cbar = fig_map.colorbar(im_map, ax=ax_map)
+    cbar.set_label("Occupancy (-1 unknown, 0 free, 1 occupied)")
+    ax_map.set_title("Dynamic LiDAR Map (Episode 0)")
+    plt_ex.tight_layout()
+    plt_ex.show(block=False)
 
 
     plot_model(
@@ -198,27 +218,70 @@ if __name__ == "__main__":
 
         reward_sum = 0
 
-        state, _, _, _ = env.reset()
-
+        state, _, _, info = env.reset()
         state = np.reshape(state, [1, state_size])
 
+        # Reset per-episode visited flags in dynamic map
+        dynamic_map.reset_episode()
+
+        # Optional: use initial pose to mark first visited cell
+        init_robot_x = info["robot_x"]
+        init_robot_y = info["robot_y"]
+        dynamic_map.reward_for_step(init_robot_x, init_robot_y)
+
+
         for iteration in range(100):
+            # 1) choose action
             action = agent.act(state)
 
             linear, angular = action_mapper.map_action(action)
 
-            next_state, reward, done, _ = env.step(linear, angular, 20)
-
+            # 2) step environment and get info dict
+            next_state, env_reward, done, info = env.step(linear, angular, 20)
             next_state = np.reshape(next_state, [1, state_size])
 
-            reward_sum = reward_sum + reward
+            # 3) extract pose + lidar from info
+            robot_x = info["robot_x"]
+            robot_y = info["robot_y"]
+            robot_theta = info["robot_orientation"]
 
-            agent.remember(state, action, reward_sum, next_state, done)
+            ranges = info["lidar_ranges"]
+            angle_min = info["lidar_angle_min"]
+            angle_increment = info["lidar_angle_increment"]
+            max_range = info["lidar_max_range"]
+
+            # 4) update dynamic map from LiDAR
+            dynamic_map.update_from_scan(
+                robot_x, robot_y, robot_theta,
+                ranges, angle_min, angle_increment, max_range
+            )
+
+            # 5) get exploration / revisit reward ONLY from limited map
+            exploration_reward, revisit_penalty = dynamic_map.reward_for_step(
+                robot_x, robot_y,
+                exploration_reward_value=0.5,
+                revisit_penalty_value=-0.1
+            )
+
+            # 6) total shaped reward for this step
+            step_reward = env_reward + exploration_reward + revisit_penalty
+            reward_sum += step_reward
+
+            # 7) store transition with *step-level* reward
+            agent.remember(state, action, step_reward, next_state, done)
             state = next_state
 
             if visualize:
                 env.visualize()
                 #time.sleep(1.0)
+
+                # ---- Update dynamic map live ----
+                im_map.set_data(dynamic_map.grid)
+                ax_map.set_title(f"Dynamic LiDAR Map - Ep {e}, Step {iteration}")
+                fig_map.canvas.draw()
+                fig_map.canvas.flush_events()
+                # Small pause to let GUI update (non-blocking)
+                plt_ex.pause(0.001)
                 
 
             if done:
@@ -228,8 +291,7 @@ if __name__ == "__main__":
                 break
         if len(agent.memory) > batch_size:
             agent.replay(batch_size)      # Training the model
-            mse = agent.evaluate_model(batch_size)
-            append_reward(LOG_FILE, e, reward_sum, agent.epsilon, mse)
+            append_reward(LOG_FILE, e, reward_sum, agent.epsilon)
 
 
         if e % 100 == 0 and e != 0:
@@ -240,7 +302,7 @@ if __name__ == "__main__":
             plt_ex.ylabel("Agents Epsilons")
             plt_ex.title("Agent's Epsilons")
 
-            # plt_ex.savefig("figs/After {} episodes.png".format(e))
+            plt_ex.savefig("figs/After {} episodes.png".format(e))
             mse = agent.evaluate_model(batch_size)
             agent.save("weights/{}_{}_runs_weight_after{}_episodes_with_revisit_penalty_mse_{}.h5".format(STARTING_TIME,EPISODES,e, mse))
 
