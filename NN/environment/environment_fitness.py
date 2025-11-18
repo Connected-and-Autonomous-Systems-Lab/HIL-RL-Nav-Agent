@@ -182,16 +182,16 @@ class FitnessData:
 
 
         reward += distance_robot_to_end_diff_abs # [-6 , 6 ]
-        reward += (3*rotations_cos_sum) #[-3 , 3 ]
-        reward += diff_rotations # [ -3xpi , pi]
+        # reward += (3*rotations_cos_sum) #[-3 , 3 ]
+        # reward += diff_rotations # [ -3xpi , pi]
 
 
         #reward ~ [-18, 12 ]
         if env_done:
             reward = -20 #- distance_robot_to_end / distance_start_to_end * 100
             done = True
-        elif distance_robot_to_end < self._node_data.get_node_end().radius():
-            reward = 20
+        elif distance_robot_to_end < self._node_data.get_node_end().radius(): # reached the goal
+            reward = 100
             done = self._handle_terminate_at_end()
 
 

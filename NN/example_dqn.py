@@ -40,7 +40,7 @@ from datetime import datetime
 
 
 
-EPISODES = 10000
+EPISODES = 100
 STARTING_TIME = datetime.now().strftime("%Y%m%d-%H%M%S")
 LOG_FILE = Path("logs/{}_rewards.csv".format(STARTING_TIME))
 
@@ -160,6 +160,7 @@ if __name__ == "__main__":
             next_state, reward, done, _ = env.step(linear, angular, 20)
 
             next_state = np.reshape(next_state, [1, state_size])
+            # print("reward = ", reward)
 
             reward_sum = reward_sum + reward
 
@@ -168,7 +169,7 @@ if __name__ == "__main__":
                 
 
             if done:
-                print("episode: {}/{}, score: {}, e: {:.2} iteration:{}"
+                print("episode: {}/{}, reward_sum: {}, e: {:.2} iteration:{}"
                     .format(e, EPISODES, reward_sum, agent.epsilon, iteration))
             
                 append_reward(LOG_FILE, e, reward_sum, agent.epsilon)
