@@ -6,6 +6,10 @@ __pycache__/
 # C extensions
 *.so
 
+# Logs folders
+NN/logs/
+NN/logs_done/
+
 # Weights and Figures
 NN/weights/
 NN/weights2/
