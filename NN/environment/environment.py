@@ -135,6 +135,7 @@ class Environment:
         :param skip_number: Number of laserscan to skip until return.
         :return: observation, reward, done, info
         """
+        # ---- 1) Step the low-level sim ----
         self._env.step(linear_velocity, angular_velocity, skip_number)
 
         env_robot_x = self._env.get_robot_pose_x()
@@ -147,14 +148,14 @@ class Environment:
                                                            env_robot_orientation,
                                                            env_done)
 
-        # -------- base LiDAR observation (without rotation vector) --------
+        # -------- base LiDAR observation for RL (NORMALIZED) --------
         if self._cluster_size < 2:
-            lidar_observation = self._get_observation()
+            lidar_observation_norm = self._get_observation()  # values in [0, 1]
         else:
-            lidar_observation = self._get_observation_min_clustered()
+            lidar_observation_norm = self._get_observation_min_clustered()
 
-        # Copy for full observation (we may append rotation info)
-        observation = list(lidar_observation)
+        # This is the observation the agent sees
+        observation = list(lidar_observation_norm)
 
         # -------- optional rotation "compass" vector --------
         if self._observation_rotation_use:
@@ -175,30 +176,32 @@ class Environment:
 
                 angle_sum += angle_step_size
 
-        # -------- LiDAR angle model (simple assumption: 360° around robot) --------
-        num_beams = len(lidar_observation)
-        if num_beams > 0:
-            angle_min = -math.pi
-            angle_increment = 2.0 * math.pi / float(num_beams)
-        else:
-            angle_min = 0.0
-            angle_increment = 0.0
+        # -------- REAL LiDAR scan for mapping (matches green rays) --------
+        lidar = self._env.robot.lidar  # from pysim2d.py
 
-        # A reasonable default; adjust if your sim uses another range
-        max_range = 10.0
+        # Raw distances in meters (same ones used by the Visualizer)
+        raw_ranges = lidar.laser_distances.copy()
+
+        angle_min = lidar.angle_min           # e.g. -2.35619 rad
+        angle_increment = lidar.angle_step    # spacing between beams
+        max_range = lidar.range_max           # e.g. 20.0 m
 
         info = {
             "robot_x": env_robot_x,
             "robot_y": env_robot_y,
             "robot_orientation": env_robot_orientation,
-            "lidar_ranges": lidar_observation,
+
+            # For dynamic mapping – REAL scan data
+            "lidar_ranges": raw_ranges,
             "lidar_angle_min": angle_min,
             "lidar_angle_increment": angle_increment,
             "lidar_max_range": max_range,
+
             "env_done": env_done,
         }
 
         return observation, reward, done, info
+
 
 
     def _classify(self, observation):

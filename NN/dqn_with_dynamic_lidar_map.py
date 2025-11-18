@@ -304,6 +304,11 @@ if __name__ == "__main__":
 
             plt_ex.savefig("figs/After {} episodes.png".format(e))
             mse = agent.evaluate_model(batch_size)
+            
+            dynamic_map.save_map_png(
+                filename=f"figs/maps/episode_{e:03}.png",
+                title=f"Dynamic LiDAR Map after episode {e}"
+            )
             agent.save("weights/{}_{}_runs_weight_after{}_episodes_with_revisit_penalty_mse_{}.h5".format(STARTING_TIME,EPISODES,e, mse))
 
 
