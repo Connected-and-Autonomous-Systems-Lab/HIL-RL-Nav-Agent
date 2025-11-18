@@ -1,0 +1,1 @@
+COntrol agent in every episode which divides by 10

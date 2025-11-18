@@ -1,0 +1,8 @@
+dqn_rewards_for_steps.py
+
+reward giving episodes: first 5 and episodes%10==0
+
+in reward giving episodes gave numeric reward multiplier for 20 step chunks
+environment reward multiplied by the human reward multiplier
+and saved the multiplied reward values
+negative multiplier values can also given

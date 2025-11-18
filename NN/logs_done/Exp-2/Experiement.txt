@@ -1,0 +1,10 @@
+git branch : feedbacks-for-set-of-steps
+
+example_dqn.py
+
+ran 100 episodes with usual reward function
+
+dqn_intermediate_manual_steps.py
+
+ran 100 episodes with letting the user to control the agent 20 steps and another 20 automatic alternatively in the forst 5 episodes and all the episedes which divides by 10
+
