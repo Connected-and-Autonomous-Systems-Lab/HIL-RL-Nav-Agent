@@ -40,7 +40,7 @@ from datetime import datetime
 
 
 
-EPISODES = 10000
+EPISODES = 20000
 STARTING_TIME = datetime.now().strftime("%Y%m%d-%H%M%S")
 LOG_FILE = Path("logs/{}_rewards.csv".format(STARTING_TIME))
 
@@ -49,14 +49,14 @@ class DQNAgent:
     def __init__(self, state_size, action_size):
         self.state_size = state_size
         self.action_size = action_size
-        self.memory = deque(maxlen=10000)
+        self.memory = deque(maxlen=100000)
         self.gamma = 0.95    # discount rate
         self.epsilon = 1.0  # exploration rate
         # self.epsilon_min = 0.01
-        # self.epsilon_decay = 0.995
+        self.epsilon_decay = 0.995
         # self.learning_rate = 0.001
         self.epsilon_min = 0.0
-        self.epsilon_decay = 0.998
+        # self.epsilon_decay = 0.998
         self.learning_rate = 0.001
 
         self.model = self._build_model()
@@ -68,7 +68,7 @@ class DQNAgent:
         # Neural Net for Deep-Q learning Model
         model = Sequential()
         model.add(Dense(2048, input_dim=self.state_size, activation='relu'))
-        model.add(Dense(512, activation='relu'))
+        # model.add(Dense(512, activation='relu'))
         model.add(Dense(256, activation='relu'))
         model.add(Dense(self.action_size, activation='linear'))
         # model.compile(loss='mse',
@@ -164,16 +164,19 @@ if __name__ == "__main__":
 
             reward_sum = reward_sum + reward
 
-            agent.remember(state, action, reward_sum, next_state, done)
+            # agent.remember(state, action, reward_sum, next_state, done)
+            agent.remember(state, action, reward, next_state, done)
             state = next_state
                 
 
             if done:
-                print("episode: {}/{}, reward_sum: {}, e: {:.2} iteration:{}"
+                break
+
+        print("episode: {}/{}, reward_sum: {}, e: {:.2} iteration:{}"
                     .format(e, EPISODES, reward_sum, agent.epsilon, iteration))
             
-                append_reward(LOG_FILE, e, reward_sum, agent.epsilon)
-                break
+        append_reward(LOG_FILE, e, reward_sum, agent.epsilon)
+
         if len(agent.memory) > batch_size:
             agent.replay(batch_size)
         if e % 100 == 0 and e != 0:

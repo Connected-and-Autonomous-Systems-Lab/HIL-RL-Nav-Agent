@@ -182,8 +182,8 @@ class FitnessData:
 
 
         reward += distance_robot_to_end_diff_abs # [-6 , 6 ]
-        # reward += (3*rotations_cos_sum) #[-3 , 3 ]
-        # reward += diff_rotations # [ -3xpi , pi]
+        reward += (3*rotations_cos_sum) #[-3 , 3 ]
+        reward += diff_rotations # [ -3xpi , pi]
 
 
         #reward ~ [-18, 12 ]
