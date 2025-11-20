@@ -7,10 +7,10 @@
 #SBATCH --account=kj373
 #SBATCH --mail-user=asm277@njit.edu
 #SBATCH --mail-type=ALL
-#SBATCH --nodes=8
-#SBATCH --ntasks-per-node=8
+#SBATCH --nodes=64
+#SBATCH --ntasks-per-node=16
 #SBATCH --time=72:00:00
-#SBATCH --mem-per-cpu=16000M
+#SBATCH --mem-per-cpu=64000M
 
 module load bright python39
 source /mmfs1/scratch/kj373/asm277/HIL-RL/python39/bin/activate
