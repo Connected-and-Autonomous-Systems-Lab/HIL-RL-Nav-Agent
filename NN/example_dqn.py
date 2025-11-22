@@ -164,8 +164,8 @@ if __name__ == "__main__":
 
             reward_sum = reward_sum + reward
 
-            # agent.remember(state, action, reward_sum, next_state, done)
-            agent.remember(state, action, reward, next_state, done)
+            agent.remember(state, action, reward_sum, next_state, done)
+            # agent.remember(state, action, reward, next_state, done)
             state = next_state
                 
 
