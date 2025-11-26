@@ -9,7 +9,7 @@
 #SBATCH --mail-user=asm277@njit.edu
 #SBATCH --mail-type=ALL
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=128
+#SBATCH --ntasks-per-node=8
 #SBATCH --time=72:00:00
 #SBATCH --mem-per-cpu=64000M
 
