@@ -11,7 +11,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
 #SBATCH --time=72:00:00
-#SBATCH --mem-per-cpu=64000M
+#SBATCH --mem-per-cpu=32000M
 
 module load bright python39
 source /mmfs1/scratch/kj373/asm277/HIL-RL/python39/bin/activate
