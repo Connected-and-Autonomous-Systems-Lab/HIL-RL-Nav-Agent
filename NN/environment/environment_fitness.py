@@ -136,6 +136,38 @@ class FitnessData:
         :return:
         """
         self._node_data.new_node_selection()
+    def calculate_reward_asm(self, robot_x: float, robot_y: float, robot_orientation: float, env_done: bool):
+        """
+        A simplified reward function following Akhitha's rules:
+            - Collision with wall/obstacle → -50
+            - Reaching goal → +50
+            - Every step → -1
+        """
+
+        done = False
+
+        # 1) Collision with wall/obstacle
+        if env_done:
+            reward = -50
+            done = True
+
+        # 2) Reached the goal
+        elif self._distance_robot_to_end(robot_x, robot_y) < self._node_data.get_node_end().radius():
+            reward = 50
+            done = self._handle_terminate_at_end()
+
+        # 3) Normal step penalty
+        else:
+            reward = -1
+            done = False
+
+        # Update internal last-position trackers
+        self._robot_x_last = robot_x
+        self._robot_y_last = robot_y
+        self._robot_orientation_last = robot_orientation
+
+        return reward, done
+
 
     def calculate_reward(self, robot_x: float, robot_y: float, robot_orientation: float, env_done: bool):
         """
@@ -191,7 +223,7 @@ class FitnessData:
             reward = -20 #- distance_robot_to_end / distance_start_to_end * 100
             done = True
         elif distance_robot_to_end < self._node_data.get_node_end().radius(): # reached the goal
-            reward = 100
+            reward = 20
             done = self._handle_terminate_at_end()
 
 
