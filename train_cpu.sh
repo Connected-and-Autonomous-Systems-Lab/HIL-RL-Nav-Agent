@@ -3,12 +3,13 @@
 #SBATCH --output=./hpc_logs/%x.%j.out
 #SBATCH --error=./hpc_logs/%x.%j.err
 #SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
 #SBATCH --qos=standard
 #SBATCH --account=kj373
 #SBATCH --mail-user=asm277@njit.edu
 #SBATCH --mail-type=ALL
-#SBATCH --nodes=16
-#SBATCH --ntasks-per-node=8
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=128
 #SBATCH --time=72:00:00
 #SBATCH --mem-per-cpu=64000M
 
