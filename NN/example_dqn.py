@@ -1,4 +1,5 @@
 import random
+from xml.parsers.expat import model
 import numpy as np
 import time
 from collections import deque
@@ -49,17 +50,17 @@ class DQNAgent:
     def __init__(self, state_size, action_size):
         self.state_size = state_size
         self.action_size = action_size
-        self.memory = deque(maxlen=100000000000)
+        self.memory = deque(maxlen=500000)
         self.gamma = 0.95    # discount rate
         self.epsilon = 1.0  # exploration rate
         # self.epsilon_min = 0.0
         # self.epsilon_decay = 0.995
         # self.learning_rate = 0.001
         self.epsilon_min = 0.1
-        self.epsilon_decay = 0.9998
+        self.epsilon_decay = 0.998
         self.learning_rate = 0.01
 
-        self.model = self._build_model()
+        self.model = self._build_model_asm()
 
     
 
@@ -76,6 +77,20 @@ class DQNAgent:
         model.compile(loss='mse', optimizer=Adam(learning_rate=self.learning_rate))
 
 
+        
+        return model
+    
+    def _build_model_asm(self):
+
+        # Neural Net for Deep-Q learning Model
+        model = Sequential()
+        model.add(Dense(256, input_dim=self.state_size, activation='relu'))
+        model.add(Dense(128, activation='relu'))
+        model.add(Dense(64, activation='relu'))
+        model.add(Dense(self.action_size, activation='linear'))
+        # model.compile(loss='mse',
+        #               optimizer=Adam(lr=self.learning_rate))
+        model.compile(loss='mse', optimizer=Adam(learning_rate=self.learning_rate))
         
         return model
 
@@ -136,7 +151,7 @@ if __name__ == "__main__":
 
     done = False
     batch_size = 48
-    env.activate_visuals(True)
+    env.activate_visuals(False)
 
     print("START DQN")
 
@@ -150,7 +165,6 @@ if __name__ == "__main__":
         state, _, _, _ = env.reset()
 
         state = np.reshape(state, [1, state_size])
-        print("initial statr: ", state)
 
         for iteration in range(100):
             action = agent.act(state)
