@@ -147,6 +147,8 @@ class FitnessData:
         done = False
         k = 1.0
 
+        reward = 0.0
+
         # 1) Collision with wall/obstacle
         if env_done:
             reward = -50

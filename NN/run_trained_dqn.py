@@ -19,8 +19,22 @@ class DQNAgent:
         self.gamma = 0.95
         self.epsilon = 0.0            # <<— evaluation: no exploration
         self.learning_rate = 0.001
-        self.model = self._build_model()
+        self.model = self._build_model_asm()
         self.model.summary()
+    
+    def _build_model_asm(self):
+
+        # Neural Net for Deep-Q learning Model
+        model = Sequential()
+        model.add(Dense(256, input_dim=self.state_size, activation='relu'))
+        model.add(Dense(128, activation='relu'))
+        model.add(Dense(64, activation='relu'))
+        model.add(Dense(self.action_size, activation='linear'))
+        # model.compile(loss='mse',
+        #               optimizer=Adam(lr=self.learning_rate))
+        model.compile(loss='mse', optimizer=Adam(learning_rate=self.learning_rate))
+        
+        return model
 
     def _build_model(self):
         model = Sequential()
@@ -51,7 +65,7 @@ if __name__ == "__main__":
     action_size = action_mapper.ACTION_SIZE
 
     agent = DQNAgent(state_size, action_size)
-    agent.load("weights/20251126-025530_20000_runs_weight_after500_episodes.h5")
+    agent.load("weights/20251127-140008_20000_runs_weight_after100_episodes.h5")
     agent.epsilon = 0.0  
 
     env.activate_visuals(True)
