@@ -2,13 +2,12 @@
 #SBATCH --job-name=rl_train_asm
 #SBATCH --output=./hpc_logs/%x.%j.out
 #SBATCH --error=./hpc_logs/%x.%j.err
-#SBATCH --partition=gpu
-#SBATCH --gres=gpu:1
+#SBATCH --partition=standard
 #SBATCH --qos=standard
 #SBATCH --account=kj373
 #SBATCH --mail-user=asm277@njit.edu
 #SBATCH --mail-type=ALL
-#SBATCH --nodes=1
+#SBATCH --nodes=8
 #SBATCH --ntasks-per-node=8
 #SBATCH --time=72:00:00
 #SBATCH --mem-per-cpu=32000M
