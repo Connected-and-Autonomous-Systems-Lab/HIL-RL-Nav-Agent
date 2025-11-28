@@ -219,17 +219,17 @@ class FitnessData:
 
         # 3) Normal step penalty
         else:
-            # reward = -1
+            reward = -1
             done = False
         
 
-        curr_dist_to_goal = self._distance_robot_to_end(robot_x, robot_y)
+        # curr_dist_to_goal = self._distance_robot_to_end(robot_x, robot_y)
 
-        prev_dist_to_goal = self._distance_robot_to_end(self._robot_x_last, self._robot_y_last)
+        # prev_dist_to_goal = self._distance_robot_to_end(self._robot_x_last, self._robot_y_last)
         
-        r_dist = k * (prev_dist_to_goal - curr_dist_to_goal) # reward based on the distance to goal
+        # r_dist = k * (prev_dist_to_goal - curr_dist_to_goal) # reward based on the distance to goal
 
-        reward += r_dist
+        # reward += r_dist
 
 
         # Update internal last-position trackers
