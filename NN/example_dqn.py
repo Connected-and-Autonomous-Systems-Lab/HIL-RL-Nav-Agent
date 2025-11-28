@@ -159,7 +159,6 @@ if __name__ == "__main__":
 
     for e in range(EPISODES):
 
-
         reward_sum = 0
 
         state, _, _, _ = env.reset()
