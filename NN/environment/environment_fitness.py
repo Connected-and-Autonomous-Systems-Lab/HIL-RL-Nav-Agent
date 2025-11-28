@@ -159,7 +159,7 @@ class FitnessData:
 
         # 3) Normal step penalty
         else:
-            reward = -1
+            # reward = -1
             done = False
         
 
