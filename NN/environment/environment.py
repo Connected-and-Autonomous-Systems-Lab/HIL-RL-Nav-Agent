@@ -142,7 +142,7 @@ class Environment:
         env_robot_orientation = self._env.get_robot_pose_orientation()
         env_done = self._env.done()
 
-        reward, done = self._fitness_data.calculate_reward_asm(env_robot_x,
+        reward, done = self._fitness_data.calculate_reward(env_robot_x,
                                                            env_robot_y,
                                                            env_robot_orientation,
                                                            env_done)
