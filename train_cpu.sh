@@ -2,7 +2,7 @@
 #SBATCH --job-name=rl_train_asm
 #SBATCH --output=./hpc_logs/%x.%j.out
 #SBATCH --error=./hpc_logs/%x.%j.err
-#SBATCH --partition=standard
+#SBATCH --partition=general
 #SBATCH --qos=standard
 #SBATCH --account=kj373
 #SBATCH --mail-user=asm277@njit.edu
