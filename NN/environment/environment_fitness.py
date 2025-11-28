@@ -3,6 +3,8 @@
 import math
 from .environment_node_data import NodeData, Mode
 from math import sqrt
+import random
+from .environment_node import Node
 class FitnessData:
     """
     Class for calculating the fitness function reward from the current simulation state. Possible reward calculation
@@ -20,6 +22,52 @@ class FitnessData:
         self._robot_x_last = 0.0
         self._robot_y_last = 0.0
         self._robot_orientation_last = 0.0
+
+        # >>>  PREDEFINED TARGET POSITIONS <<<
+        # Each entry is (x, y, radius)
+        self._target_positions = [
+            (0.870857148, 11.12228544, 0.870857148),   # the original target from test.node
+            (2.0, 3.0, 0.8),
+            (5.0, 4.0, 0.8),
+            (8.0, 10.0, 0.8),
+            (11.0, 6.0, 0.8),
+            (3.0, 5.0, 0.8),
+            # add as many as you like
+        ]
+    
+
+    def _pick_random_target_from_list(self):
+        """
+        Override the current end node with a random one from self._target_positions.
+        """
+        if not self._target_positions:
+            return  # nothing to do
+
+        # Randomly pick one target (x, y, radius)
+        x, y, r = random.choice(self._target_positions)
+
+        # Reuse id and angles from whatever end node NodeData selected
+        current_end = self._node_data.get_node_end()
+        if current_end is not None:
+            node_id = current_end.id()
+            angle_start = current_end.angle_start()
+            angle_end = current_end.angle_end()
+        else:
+            node_id = 0
+            angle_start = 0.0
+            angle_end = 0.0
+
+        # Override NodeData's current end node
+        # (Node is already imported at the top of this file)
+        self._node_data._current_end = Node(
+            x, y, r,
+            is_start=False,
+            is_end=True,
+            number=node_id,
+            angle_start=angle_start,
+            angle_end=angle_end
+        )
+
 
     def get_end_node(self):
         """
@@ -133,9 +181,19 @@ class FitnessData:
     def reset(self):
         """
         Reset call from the environment to select new node.
-        :return:
         """
+        # Let NodeData choose a (possibly new) start / end pair
         self._node_data.new_node_selection()
+
+        # Then override the end node with one from our predefined target list
+        self._pick_random_target_from_list()
+
+        # Optional: reset the "last robot pose" trackers
+        start_node = self._node_data.get_node_start()
+        self._robot_x_last = start_node.x()
+        self._robot_y_last = start_node.y()
+        self._robot_orientation_last = 0.0
+
     def calculate_reward_asm(self, robot_x: float, robot_y: float, robot_orientation: float, env_done: bool):
         """
         A simplified reward function following Akhitha's rules:

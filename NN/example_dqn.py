@@ -159,6 +159,12 @@ if __name__ == "__main__":
 
     for e in range(EPISODES):
 
+        # if e % 2 == 0:
+        #     env.activate_visuals(True)
+        # else:
+        #     env.activate_visuals(False)
+        
+
         reward_sum = 0
 
         state, _, _, _ = env.reset()
@@ -180,6 +186,8 @@ if __name__ == "__main__":
             agent.remember(state, action, reward_sum, next_state, done)
             # agent.remember(state, action, reward, next_state, done)
             state = next_state
+
+            # env.visualize()
                 
 
             if done:
@@ -196,6 +204,8 @@ if __name__ == "__main__":
             # agent.save("./save/dqn" + str(e) + ".h5")
             agent.save("weights/{}_{}_runs_weight_after{}_episodes.h5".format(STARTING_TIME, EPISODES,e))
             # agent.save("weights/500_runs_model_after{}_episodes.keras".format(e))
+        
+        
 
 
     print("DQN Done")
