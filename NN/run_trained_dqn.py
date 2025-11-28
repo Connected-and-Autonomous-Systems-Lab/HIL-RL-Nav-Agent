@@ -17,7 +17,7 @@ class DQNAgent:
         self.state_size = state_size
         self.action_size = action_size
         self.gamma = 0.95
-        self.epsilon = 0.0            # <<— evaluation: no exploration
+        self.epsilon = 0.25            # <<— evaluation: no exploration
         self.learning_rate = 0.001
         self.model = self._build_model_asm()
         self.model.summary()
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     action_size = action_mapper.ACTION_SIZE
 
     agent = DQNAgent(state_size, action_size)
-    agent.load("weights/20251127-140008_20000_runs_weight_after100_episodes.h5")
+    agent.load("weights/20251127-214835_20000_runs_weight_after1500_episodes.h5")
     agent.epsilon = 0.0  
 
     env.activate_visuals(True)
