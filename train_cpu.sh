@@ -9,7 +9,7 @@
 #SBATCH --mail-type=ALL
 #SBATCH --nodes=2
 #SBATCH --ntasks-per-node=8
-#SBATCH --time=72:00:00                 # max for standard/low QoS is 72h
+#SBATCH --time=6:00:00                 # max for standard/low QoS is 72h
 #SBATCH --mem-per-cpu=8000M                       
 
 # ---- Environment setup ----
@@ -24,4 +24,4 @@ source /mmfs1/scratch/kj373/asm277/HIL-RL/python39/bin/activate
 cd /mmfs1/scratch/kj373/asm277/HIL-RL/HIL-RL-Nav-Agent/NN
 
 # ---- Run your RL training ----
-python example_dqn.py
+python a3c_tf2_nav.py
