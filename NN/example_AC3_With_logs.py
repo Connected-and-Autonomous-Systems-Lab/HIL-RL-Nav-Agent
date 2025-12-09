@@ -248,6 +248,6 @@ if __name__ == "__main__":
     # After all episodes, make sure any remaining logs are written
     flush_log_buffer(LOG_FILE, log_buffer)
 
-    final_weights_path = f"weights/{STARTING_TIME}_ac_final_weights.h5"
+    final_weights_path = f"weights/{STARTING_TIME}_ac_final.weights.h5"
     agent.save(final_weights_path)
     print(f"Training done. Final weights saved to {final_weights_path}")
