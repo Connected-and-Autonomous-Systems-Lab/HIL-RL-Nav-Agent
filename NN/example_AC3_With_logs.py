@@ -237,7 +237,7 @@ if __name__ == "__main__":
             
         # Every 100 episodes, save weights AND flush logs to CSV
         if (e + 1) % 1000 == 0:
-            weights_path = f"weights/{STARTING_TIME}_{EPISODES}_runs_ac_weight_after_{e+1}_episodes.h5"
+            weights_path = f"weights/{STARTING_TIME}_{EPISODES}_runs_ac_weight_after_{e+1}_episodes.weights.h5"
             agent.save(weights_path)
             print(f"Saved weights to {weights_path}")
 
