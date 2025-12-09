@@ -229,4 +229,4 @@ if __name__ == "__main__":
             agent.replay(batch_size)
             
         if e % 1000 == 0:
-             agent.save("./weights/ac-replay" + str(e) + ".h5")
+             agent.save("./weights/ac-replay" + str(e) + ".weights.h5")
