@@ -336,8 +336,7 @@ class NodeData:
         Get the current target node.
         :return:
         """
-        # random.seed(datetime.now())
-        random.seed(datetime.now().timestamp())
+        random.seed(datetime.now())
         return self._current_end
 
     def new_end_node(self):
