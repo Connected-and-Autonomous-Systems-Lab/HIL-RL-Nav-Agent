@@ -29,6 +29,9 @@ class Environment:
         if not self._env.init(path_to_world + ".world"):
             print("Error: Load world file -> " + path_to_world + ".world")
             exit(1)
+    
+    def activate_visuals(self, val):
+        self._env.activate_visuals(val)
 
     def set_observation_rotation_size(self, size):
         """
